@@ -506,16 +506,21 @@ export function Skills() {
   }
 
   return (
-    <div className={cls.skillsWrap}>
-      <TagInput
-        value={firstStepData?.skills || []}
-        onChange={(newValue) => {
-          handleWritedata({
-            field: "skills",
-            data: newValue,
-          });
-        }}
-      />
+    <div className={cls.skillsInfoWrapper}>
+      <div className={cls.skillsContainer}>
+        <Typography.IbmPlexMono className={cls.inputText}>
+          Skills
+        </Typography.IbmPlexMono>
+        <TagInput
+          value={firstStepData?.skills || []}
+          onChange={(newValue) => {
+            handleWritedata({
+              field: "skills",
+              data: newValue,
+            });
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -568,6 +573,7 @@ const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
         setIsCollapsed(true);
         break;
       case 'skills':
+        // For skills, we just expand the section since skills are added via TagInput
         setIsCollapsed(true);
         break;
       default:
@@ -603,13 +609,13 @@ const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
       {isCollapsed ? (
         <div>
           {CardContentById[id as keyof CardContentByIdProps]}
-          {(id === 'education' || id === 'workExpirience') && (
+          {(id === 'education' || id === 'workExpirience' || id === 'skills') && (
             <div className={cls.addWorkExpirience}>
               <Button
                 className={cls.addWorkExpirienceButton}
                 onClick={handleAddClick}
               >
-                {getButtonText()}
+                {id === 'skills' ? '+ Add Skill' : getButtonText()}
               </Button>
             </div>
           )}
