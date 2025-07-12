@@ -1,6 +1,3 @@
-
-
-
 import classNames from "classnames";
 import cls from "./ResumeCard.module.scss";
 import { Typography } from "@shared/ui/typography";
@@ -8,7 +5,7 @@ import { useState } from "react";
 import { Button, DatePicker, Divider, Input, InputNumber, Select } from "antd";
 import dayjs from "dayjs";
 import TextArea from "antd/es/input/TextArea";
-import { CloseOutlined, UpOutlined, FileTextOutlined, InboxOutlined } from "@ant-design/icons";
+import { CloseOutlined, UpOutlined, FileTextOutlined, InboxOutlined, ToolOutlined } from "@ant-design/icons";
 import { FieldType } from "@shared/types/ToolBarTypes";
 import { useAtomValue, useSetAtom } from "jotai";
 import { StepFormSlice } from "@features/FirstStepForm/slice/FirstStepFormSlice";
@@ -28,6 +25,8 @@ const {
   $handleWriteProfessionalExperienceChangeIndex,
   $onAddEducationButtonClick,
   $onDeleteEducationButtonClick,
+  $onAddWorkExpirienceButtonClick,
+  $onDeleteWorkExpirienceButtonClick,
 } = StepFormSlice.actions;
 
 const { initialState } = StepFormSlice;
@@ -46,14 +45,6 @@ function EducationInfo() {
         <FileTextOutlined className={cls.emptyIcon} />
         <div className={cls.emptyTitle}>No education added yet</div>
         <div className={cls.emptyDescription}>Add your education to get started</div>
-          <div className={cls.addWorkExpirience}>
-        <Button
-          className={cls.addWorkExpirienceButton}
-          onClick={() => handleAddEducation()}
-        >
-          + Add Education
-        </Button>
-      </div>
       </div>
     );
   }
@@ -197,7 +188,6 @@ function EducationInfo() {
           </div>
         ))}
       </div>
-    
     </div>
   );
 }
@@ -343,6 +333,7 @@ function PersonalInfo() {
 function ProfessionalExperience() {
   const firstStepData = useAtomValue(initialState.$resumeData);
   const handleWritedata = useSetAtom($handleWriteProfessionalExperienceChangeIndex);
+  const handleDeleteWorkExperience = useSetAtom($onDeleteWorkExpirienceButtonClick);
 
   const hasWorkExperience = firstStepData?.professionalPath && firstStepData.professionalPath.length > 0;
 
@@ -352,137 +343,148 @@ function ProfessionalExperience() {
         <InboxOutlined className={cls.emptyIcon} />
         <div className={cls.emptyTitle}>No experience added yet</div>
         <div className={cls.emptyDescription}>Add your work experience to get started</div>
-      
       </div>
     );
   }
 
   return (
     <div className={cls.proffesionalInfoWrapper}>
-      {(firstStepData?.professionalPath || []).map((experience, index) => (
-        <div key={index} className={cls.professionalExperienceSkills}>
-          <div className={cls.professionalExperienceSkillData}>
-            <div className={cls.resumeSpace}>
-              <Typography.IbmPlexMono className={cls.inputText}>
-                Company Name
-              </Typography.IbmPlexMono>
-              <Input
-                size="large"
-                placeholder="Enter company name"
-                onChange={(evt) =>
+      <div className={cls.scrollArea}>
+        {(firstStepData?.professionalPath || []).map((experience, index) => (
+          <div key={index} className={cls.professionalExperienceSkills}>
+            <div className={cls.crossButtonWrapper}>
+              <Button
+                type="text"
+                size="small"
+                onClick={() => handleDeleteWorkExperience(index)}
+              >
+                <CloseOutlined size={12} />
+              </Button>
+            </div>
+            
+            <div className={cls.professionalExperienceSkillData}>
+              <div className={cls.resumeSpace}>
+                <Typography.IbmPlexMono className={cls.inputText}>
+                  Company Name
+                </Typography.IbmPlexMono>
+                <Input
+                  size="large"
+                  placeholder="Enter company name"
+                  onChange={(evt) =>
+                    handleWritedata({
+                      index,
+                      property: "name",
+                      value: evt.target.value,
+                    })
+                  }
+                  value={experience.name}
+                />
+              </div>
+
+              <div className={cls.resumeSpace}>
+                <Typography.IbmPlexMono className={cls.inputText}>
+                  Position
+                </Typography.IbmPlexMono>
+                <Input
+                  size="large"
+                  placeholder="Enter your position"
+                  onChange={(evt) =>
+                    handleWritedata({
+                      index,
+                      property: "role",
+                      value: evt.target.value,
+                    })
+                  }
+                  value={experience.role}
+                />
+              </div>
+            </div>
+
+            <div className={cls.professionalExperienceSkillData}>
+              <DatePicker
+                style={{ width: "100%" }}
+                placeholder="Start Date"
+                format="MM.DD.YYYY"
+                value={
+                  dayjs(experience.startWork).isValid() ? dayjs(experience.startWork) : undefined
+                }
+                onChange={(value) =>
                   handleWritedata({
                     index,
-                    property: "name",
-                    value: evt.target.value,
+                    property: "startWork",
+                    value: dayjs(value).format("MM.DD.YYYY"),
                   })
                 }
-                value={experience.name}
+                size="large"
+              />
+              <DatePicker
+                style={{ width: "100%" }}
+                placeholder="End Date"
+                format="MM.DD.YYYY"
+                value={dayjs(experience.endWork).isValid() ? dayjs(experience.endWork) : undefined}
+                onChange={(value) =>
+                  handleWritedata({
+                    index,
+                    property: "endWork",
+                    value: dayjs(value).format("MM.DD.YYYY"),
+                  })
+                }
+                size="large"
               />
             </div>
 
+            <TextArea
+              value={experience.description}
+              style={{ height: 120, resize: "none" }}
+              allowClear
+              size="large"
+              variant="outlined"
+              placeholder="Describe your role and responsibilities"
+              onChange={(evt) =>
+                handleWritedata({
+                  index,
+                  property: "description",
+                  value: evt.target.value,
+                })
+              }
+            />
+
             <div className={cls.resumeSpace}>
               <Typography.IbmPlexMono className={cls.inputText}>
-                Position
+                Responsibilities
               </Typography.IbmPlexMono>
-              <Input
-                size="large"
-                placeholder="Enter your position"
-                onChange={(evt) =>
+              <TagInput
+                isVertical
+                onChange={(value) =>
                   handleWritedata({
                     index,
-                    property: "role",
-                    value: evt.target.value,
+                    property: "responsibilities",
+                    value: value,
                   })
                 }
-                value={experience.role}
+                value={experience.responsibilities}
+              />
+            </div>
+            
+            <div className={cls.resumeSpace}>
+              <Typography.IbmPlexMono className={cls.inputText}>
+                Achievements
+              </Typography.IbmPlexMono>
+              <TagInput
+                isVertical
+                onChange={(value) =>
+                  handleWritedata({
+                    index,
+                    property: "achievements",
+                    value: value,
+                  })
+                }
+                value={experience.achievements}
               />
             </div>
           </div>
-
-          <div className={cls.professionalExperienceSkillData}>
-            <DatePicker
-              style={{ width: "100%" }}
-              placeholder="Start Date"
-              format="MM.DD.YYYY"
-              value={
-                dayjs(experience.startWork).isValid() ? dayjs(experience.startWork) : undefined
-              }
-              onChange={(value) =>
-                handleWritedata({
-                  index,
-                  property: "startWork",
-                  value: dayjs(value).format("MM.DD.YYYY"),
-                })
-              }
-              size="large"
-            />
-            <DatePicker
-              style={{ width: "100%" }}
-              placeholder="End Date"
-              format="MM.DD.YYYY"
-              value={dayjs(experience.endWork).isValid() ? dayjs(experience.endWork) : undefined}
-              onChange={(value) =>
-                handleWritedata({
-                  index,
-                  property: "endWork",
-                  value: dayjs(value).format("MM.DD.YYYY"),
-                })
-              }
-              size="large"
-            />
-          </div>
-
-          <TextArea
-            value={experience.description}
-            style={{ height: 120, resize: "none" }}
-            allowClear
-            size="large"
-            variant="outlined"
-            placeholder="Describe your role and responsibilities"
-            onChange={(evt) =>
-              handleWritedata({
-                index,
-                property: "description",
-                value: evt.target.value,
-              })
-            }
-          />
-
-          <div className={cls.resumeSpace}>
-            <Typography.IbmPlexMono className={cls.inputText}>
-              Responsibilities
-            </Typography.IbmPlexMono>
-            <TagInput
-              isVertical
-              onChange={(value) =>
-                handleWritedata({
-                  index,
-                  property: "responsibilities",
-                  value: value,
-                })
-              }
-              value={experience.responsibilities}
-            />
-          </div>
-          
-          <div className={cls.resumeSpace}>
-            <Typography.IbmPlexMono className={cls.inputText}>
-              Achievements
-            </Typography.IbmPlexMono>
-            <TagInput
-              isVertical
-              onChange={(value) =>
-                handleWritedata({
-                  index,
-                  property: "achievements",
-                  value: value,
-                })
-              }
-              value={experience.achievements}
-            />
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -490,6 +492,18 @@ function ProfessionalExperience() {
 export function Skills() {
   const firstStepData = useAtomValue(initialState.$resumeData);
   const handleWritedata = useSetAtom($onFirstStepMutation);
+
+  const hasSkills = firstStepData?.skills && firstStepData.skills.length > 0;
+
+  if (!hasSkills) {
+    return (
+      <div className={cls.emptyState}>
+        <ToolOutlined className={cls.emptyIcon} />
+        <div className={cls.emptyTitle}>No skills added yet</div>
+        <div className={cls.emptyDescription}>Add your skills to get started</div>
+      </div>
+    );
+  }
 
   return (
     <div className={cls.skillsWrap}>
@@ -522,6 +536,45 @@ const CardContentById: CardContentByIdProps = {
 
 const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const firstStepData = useAtomValue(initialState.$resumeData);
+  const handleAddEducation = useSetAtom($onAddEducationButtonClick);
+  const handleAddWorkExperience = useSetAtom($onAddWorkExpirienceButtonClick);
+
+  // Determine if we should show content and what button text to use
+  const getButtonText = () => {
+    switch (id) {
+      case 'education':
+        const hasEducation = firstStepData?.educationDetails && firstStepData.educationDetails.length > 0;
+        return hasEducation ? `+ Add ${cardName}` : `+ Add ${cardName}`;
+      case 'workExpirience':
+        const hasWork = firstStepData?.professionalPath && firstStepData.professionalPath.length > 0;
+        return hasWork ? `+ Add ${cardName}` : `+ Add ${cardName}`;
+      case 'skills':
+        const hasSkills = firstStepData?.skills && firstStepData.skills.length > 0;
+        return hasSkills ? `+ Add ${cardName}` : `+ Add ${cardName}`;
+      default:
+        return `+ Add ${cardName}`;
+    }
+  };
+
+  const handleAddClick = () => {
+    switch (id) {
+      case 'education':
+        handleAddEducation();
+        setIsCollapsed(true);
+        break;
+      case 'workExpirience':
+        handleAddWorkExperience();
+        setIsCollapsed(true);
+        break;
+      case 'skills':
+        setIsCollapsed(true);
+        break;
+      default:
+        setIsCollapsed((prev) => !prev);
+        break;
+    }
+  };
 
   return (
     <div
@@ -533,18 +586,35 @@ const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
         className={classNames(cls.header, {
           [cls.collapsedHeader]: isCollapsed,
         })}
+        style={{
+          background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)'
+        }}
       >
         <div className={cls.icon}>
-        {icon}
+          {icon}
         </div>
         <Typography.IbmPlexMono className={classNames(cls.header, cls.text2)}>
           {cardName}
         </Typography.IbmPlexMono>
-        <Button type="text" onClick={() => setIsCollapsed((prev) => !prev)}>
-          +Add {cardName} 
+        <Button type="text" onClick={handleAddClick}>
+          {getButtonText()}
         </Button>
       </div>
-      {isCollapsed ? CardContentById[id as keyof CardContentByIdProps] : null}
+      {isCollapsed ? (
+        <div>
+          {CardContentById[id as keyof CardContentByIdProps]}
+          {(id === 'education' || id === 'workExpirience') && (
+            <div className={cls.addWorkExpirience}>
+              <Button
+                className={cls.addWorkExpirienceButton}
+                onClick={handleAddClick}
+              >
+                {getButtonText()}
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 };
