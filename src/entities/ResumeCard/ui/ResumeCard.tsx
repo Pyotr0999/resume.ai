@@ -493,17 +493,6 @@ export function Skills() {
   const firstStepData = useAtomValue(initialState.$resumeData);
   const handleWritedata = useSetAtom($onFirstStepMutation);
 
-  const hasSkills = firstStepData?.skills && firstStepData.skills.length > 0;
-
-  if (!hasSkills) {
-    return (
-      <div className={cls.emptyState}>
-        <ToolOutlined className={cls.emptyIcon} />
-        <div className={cls.emptyTitle}>No skills added yet</div>
-        <div className={cls.emptyDescription}>Add your skills to get started</div>
-      </div>
-    );
-  }
 
   return (
     <div className={cls.skillsInfoWrapper}>
@@ -555,8 +544,7 @@ const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
         const hasWork = firstStepData?.professionalPath && firstStepData.professionalPath.length > 0;
         return hasWork ? `+ Add ${cardName}` : `+ Add ${cardName}`;
       case 'skills':
-        const hasSkills = firstStepData?.skills && firstStepData.skills.length > 0;
-        return hasSkills ? `+ Add ${cardName}` : `+ Add ${cardName}`;
+        return `+ Add ${cardName}`;
       default:
         return `+ Add ${cardName}`;
     }
@@ -573,7 +561,10 @@ const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
         setIsCollapsed(true);
         break;
       case 'skills':
-        // For skills, we just expand the section since skills are added via TagInput
+        // For skills, we just expand the section and initialize empty skills array if needed
+        if (!firstStepData?.skills) {
+          handleWritedata({ field: "skills", data: [] });
+        }
         setIsCollapsed(true);
         break;
       default:
