@@ -493,6 +493,17 @@ export function Skills() {
   const firstStepData = useAtomValue(initialState.$resumeData);
   const handleWritedata = useSetAtom($onFirstStepMutation);
 
+  const hasSkills = firstStepData?.skills && firstStepData.skills.length > 0;
+
+  if (!hasSkills) {
+    return (
+      <div className={cls.emptyState}>
+        <ToolOutlined className={cls.emptyIcon} />
+        <div className={cls.emptyTitle}>No skills added yet</div>
+        <div className={cls.emptyDescription}>Add your skills to get started</div>
+      </div>
+    );
+  }
 
   return (
     <div className={cls.skillsInfoWrapper}>
@@ -531,6 +542,7 @@ const CardContentById: CardContentByIdProps = {
 const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const firstStepData = useAtomValue(initialState.$resumeData);
+  const handleWritedata = useSetAtom($onFirstStepMutation);
   const handleAddEducation = useSetAtom($onAddEducationButtonClick);
   const handleAddWorkExperience = useSetAtom($onAddWorkExpirienceButtonClick);
 
@@ -561,10 +573,8 @@ const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
         setIsCollapsed(true);
         break;
       case 'skills':
-        // For skills, we just expand the section and initialize empty skills array if needed
-        if (!firstStepData?.skills) {
-          handleWritedata({ field: "skills", data: [] });
-        }
+        // Initialize empty skills array and expand the section
+        handleWritedata({ field: "skills", data: firstStepData?.skills || [] });
         setIsCollapsed(true);
         break;
       default:
@@ -600,13 +610,25 @@ const ResumeCard = ({ cardName, icon, id }: ResumeCardProps) => {
       {isCollapsed ? (
         <div>
           {CardContentById[id as keyof CardContentByIdProps]}
-          {(id === 'education' || id === 'workExpirience' || id === 'skills') && (
+          {(id === 'education' || id === 'workExpirience') && (
             <div className={cls.addWorkExpirience}>
               <Button
                 className={cls.addWorkExpirienceButton}
                 onClick={handleAddClick}
               >
-                {id === 'skills' ? '+ Add Skill' : getButtonText()}
+                {getButtonText()}
+              </Button>
+            </div>
+          )}
+          {id === 'skills' && firstStepData?.skills && firstStepData.skills.length > 0 && (
+            <div className={cls.addWorkExpirience}>
+              <Button
+                className={cls.addWorkExpirienceButton}
+                onClick={() => {
+                  // Skills section doesn't need additional add functionality since TagInput handles it
+                }}
+              >
+                Skills are managed above
               </Button>
             </div>
           )}
